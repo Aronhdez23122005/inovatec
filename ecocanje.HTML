@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EcoCanje Smart Platform</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        body {
+            background: #f3f4f6;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        .bottom-nav {
+            box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.08);
+        }
+        
+        .card-shadow {
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+        }
+        
+        .active-nav {
+            color: #06b6d4;
+        }
+        
+        .active-bg {
+            background: #dff6ff;
+        }
+        
+        .glow {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        
+        #map {
+            width: 100%;
+            height: 450px;
+            border-radius: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="p-5 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center glow">
+                    <i data-lucide="recycle" class="text-white"></i>
+                </div>
+
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">
+                        Eco<span class="text-cyan-500">Canje</span>
+                    </h1>
+                    <p class="text-xs text-gray-500">
+                        Economía Circular Inteligente
+                    </p>
+                </div>
+            </div>
+
+            <button onclick="abrirPerfil()" class="w-12 h-12 rounded-full border-2 border-cyan-400 flex items-center justify-center hover:bg-cyan-50 transition">
+            <i data-lucide="user" class="text-cyan-500"></i>
+        </button>
+        </div>
+    </header>
+
+    <div id="perfilModal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-5">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md card-shadow">
+
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Perfil de Usuario</h2>
+                <button onclick="cerrarPerfil()">
+                <i data-lucide="x"></i>
+            </button>
+            </div>
+
+            <div class="flex flex-col items-center mb-6">
+                <div class="w-24 h-24 rounded-full bg-cyan-100 flex items-center justify-center mb-4">
+                    <i data-lucide="user" class="text-cyan-500 w-10 h-10"></i>
+                </div>
+                <h3 class="text-2xl font-bold">Aron Hernandez</h3>
+                <p class="text-cyan-600 font-semibold mt-1">Nivel Verde Platino</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-gray-500 text-sm">Nombre</label>
+                    <input type="text" value="Aron Hernandez" class="w-full bg-gray-100 rounded-xl p-4 mt-1">
+                </div>
+
+                <div>
+                    <label class="text-gray-500 text-sm">Correo</label>
+                    <input type="email" value="aron@gmail.com" class="w-full bg-gray-100 rounded-xl p-4 mt-1">
+                </div>
+
+                <div>
+                    <label class="text-gray-500 text-sm">Teléfono</label>
+                    <input type="text" value="+52 55 0000 0000" class="w-full bg-gray-100 rounded-xl p-4 mt-1">
+                </div>
+
+                <button onclick="guardarPerfil()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white py-4 rounded-2xl font-semibold transition">
+                Guardar Cambios
+            </button>
+            </div>
+
+        </div>
+    </div>
+
+    <section id="inicio" class="screen active p-5 pb-36">
+
+        <div class="bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 rounded-[35px] p-6 text-white card-shadow relative overflow-hidden">
+
+            <div class="absolute top-[-30px] right-[-20px] opacity-10">
+                <i data-lucide="credit-card" class="w-56 h-56"></i>
+            </div>
+
+            <div class="relative z-10">
+
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold">EcoCanje Card</h2>
+                        <p class="opacity-80 mt-1">Wallet Ecológico Inteligente</p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="wifi" class="w-7 h-7"></i>
+                        <span class="text-sm font-semibold">Tap</span>
+                    </div>
+                </div>
+
+                <div class="mt-12 tracking-[4px] text-2xl font-semibold">
+                    4578 1120 5489 2034
+                </div>
+
+                <div class="flex justify-between mt-10">
+                    <div>
+                        <p class="text-sm opacity-70">Titular</p>
+                        <p class="font-bold text-lg">Aron Hernandez</p>
+                    </div>
+
+                    <div>
+                        <p class="text-sm opacity-70">Vence</p>
+                        <p class="font-bold text-lg">04/2029</p>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <p class="opacity-80 text-sm">Saldo ecológico</p>
+                    <h3 id="saldo" class="text-5xl font-bold mt-1">$0.00</h3>
+                    <p id="puntos" class="mt-3 text-lg font-semibold">0 puntos verdes</p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="mt-10 bg-white rounded-3xl p-6 card-shadow flex flex-col items-center">
+
+            <h3 class="text-2xl font-bold text-gray-800 mb-5">QR de Usuario</h3>
+
+            <div id="qrcode" class="bg-white p-5 rounded-2xl"></div>
+
+            <p class="text-gray-500 text-center mt-5">
+                Escanea el QR para registrar reciclaje.
+            </p>
+
+            <button onclick="mostrarMovimientos()" class="mt-5 bg-cyan-500 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-cyan-600 transition">
+            Ver movimientos
+        </button>
+
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mt-10">
+
+            <button onclick="depositarPET1()" class="bg-white rounded-3xl p-5 card-shadow hover:scale-105 transition">
+            <h3 class="font-bold text-xl text-gray-800">PET 1</h3>
+            <p class="text-gray-500 mt-1">Coca-Cola, Pepsi</p>
+            <div class="mt-5 text-green-600 font-bold text-2xl">+$0.02</div>
+        </button>
+
+            <button onclick="depositarPET2()" class="bg-white rounded-3xl p-5 card-shadow hover:scale-105 transition">
+            <h3 class="font-bold text-xl text-gray-800">PET 2</h3>
+            <p class="text-gray-500 mt-1">Shampoo y detergente</p>
+            <div class="mt-5 text-green-600 font-bold text-2xl">+$0.04</div>
+        </button>
+
+            <button onclick="depositarPET4()" class="bg-white rounded-3xl p-5 card-shadow hover:scale-105 transition">
+            <h3 class="font-bold text-xl text-gray-800">PET 4</h3>
+            <p class="text-gray-500 mt-1">Bolsas reciclables</p>
+            <div class="mt-5 text-green-600 font-bold text-2xl">+$0.01</div>
+        </button>
+
+            <button onclick="depositarAluminio()" class="bg-white rounded-3xl p-5 card-shadow hover:scale-105 transition">
+            <h3 class="font-bold text-xl text-gray-800">Aluminio</h3>
+            <p class="text-gray-500 mt-1">Latas reciclables</p>
+            <div class="mt-5 text-green-600 font-bold text-2xl">+$1.50</div>
+        </button>
+
+        </div>
+
+        <div class="mt-10 bg-white rounded-3xl p-6 card-shadow">
+            <div class="flex items-center gap-3 mb-5">
+                <i data-lucide="cpu" class="text-cyan-500"></i>
+                <h3 class="text-2xl font-bold text-gray-800">Estado del Contenedor</h3>
+            </div>
+
+            <div class="mb-5">
+                <div class="flex justify-between text-sm mb-2">
+                    <span>Llenado del bote</span>
+                    <span id="llenadoTexto">0%</span>
+                </div>
+
+                <div class="bg-gray-200 h-4 rounded-full overflow-hidden">
+                    <div id="llenadoBarra" class="bg-green-500 h-full progress-bar" style="width:0%"></div>
+                </div>
+            </div>
+
+            <div id="respuestaBote" class="bg-cyan-50 text-cyan-700 rounded-2xl p-5 font-medium leading-relaxed">
+                Esperando residuos reciclables...
+            </div>
+        </div>
+
+    </section>
+
+    <section id="centros" class="screen p-5 pb-36">
+
+        <h2 class="text-3xl font-bold text-gray-800">Mapa de Centros EcoCanje</h2>
+        <p class="text-gray-500 mt-1 mb-6">
+            Busca una dirección real o usa tu ubicación actual.
+        </p>
+
+        <div class="bg-white rounded-3xl p-5 mb-6 card-shadow">
+            <label class="text-gray-600 font-semibold">
+            Buscar ubicación real
+        </label>
+
+            <div class="flex gap-3 mt-3">
+                <input id="buscadorLugar" type="text" placeholder="Ejemplo: Interlomas, Magdalena de Huixquilucan, Santa Fe" class="w-full bg-gray-100 rounded-2xl p-4 outline-none">
+
+                <button onclick="buscarLugarReal()" class="bg-cyan-500 text-white px-5 rounded-2xl font-bold hover:bg-cyan-600 transition">
+                Buscar
+            </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 mb-6 card-shadow">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Estado del Sistema</h3>
+
+            <div id="estadoSistema" class="bg-cyan-50 text-cyan-700 rounded-2xl p-5 leading-relaxed font-medium">
+                Esperando interacción del usuario...
+            </div>
+        </div>
+
+        <div id="map" class="mb-8"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+            <button onclick="miUbicacion()" class="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-2xl font-bold transition">
+            📍 Mi ubicación
+        </button>
+
+            <button onclick="centrarMapa(19.4839,-99.1332,'Centro Eco PET Norte')" class="bg-green-600 hover:bg-green-700 text-white p-4 rounded-2xl font-bold transition">
+            ♻️ Centro Norte
+        </button>
+
+            <button onclick="centrarMapa(19.3552,-99.1536,'Estación Circular Sur')" class="bg-cyan-600 hover:bg-cyan-700 text-white p-4 rounded-2xl font-bold transition">
+            🏭 Estación Sur
+        </button>
+
+            <button onclick="mostrarTodos()" class="bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-2xl font-bold transition">
+            🌎 Ver todos
+        </button>
+
+        </div>
+
+    </section>
+
+    <section id="demanda" class="screen p-5 pb-36">
+
+        <h2 class="text-3xl font-bold text-gray-800">Demanda y Recompensas</h2>
+        <p class="text-gray-500 mt-1 mb-8">El bote ajusta el valor según el material.</p>
+
+        <div class="space-y-5">
+
+            <div class="bg-white rounded-3xl p-5 card-shadow">
+                <h3 class="text-xl font-bold">PET 1</h3>
+                <p class="text-gray-500">Demanda media</p>
+                <h4 class="text-3xl font-bold text-green-600 mt-3">$0.02</h4>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 card-shadow">
+                <h3 class="text-xl font-bold">PET 2</h3>
+                <p class="text-gray-500">Demanda alta</p>
+                <h4 class="text-3xl font-bold text-green-600 mt-3">$0.04</h4>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 card-shadow">
+                <h3 class="text-xl font-bold">Aluminio</h3>
+                <p class="text-gray-500">Demanda muy alta</p>
+                <h4 class="text-3xl font-bold text-green-600 mt-3">$1.50</h4>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section id="cupones" class="screen p-5 pb-36">
+
+        <h2 class="text-3xl font-bold text-gray-800">Cupones y Servicios</h2>
+        <p class="text-gray-500 mt-1 mb-8">
+            Usa tu saldo ecológico para pagar servicios.
+        </p>
+
+        <div class="space-y-5">
+
+            <div class="bg-white rounded-3xl p-5 flex justify-between items-center card-shadow">
+                <div>
+                    <h3 class="font-bold text-xl">OXXO</h3>
+                    <p class="text-gray-500">Cupón de $50 MXN</p>
+                </div>
+                <button onclick="canjear('Cupón OXXO',50)" class="bg-cyan-500 text-white px-5 py-3 rounded-xl">Canjear</button>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 flex justify-between items-center card-shadow">
+                <div>
+                    <h3 class="font-bold text-xl">Pago CFE</h3>
+                    <p class="text-gray-500">Descuento de $100 MXN</p>
+                </div>
+                <button onclick="canjear('Pago de luz CFE',100)" class="bg-cyan-500 text-white px-5 py-3 rounded-xl">Pagar</button>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 flex justify-between items-center card-shadow">
+                <div>
+                    <h3 class="font-bold text-xl">Servicio de Agua</h3>
+                    <p class="text-gray-500">Pago parcial $80 MXN</p>
+                </div>
+                <button onclick="canjear('Pago de agua',80)" class="bg-cyan-500 text-white px-5 py-3 rounded-xl">Pagar</button>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 flex justify-between items-center card-shadow">
+                <div>
+                    <h3 class="font-bold text-xl">Despensa Básica</h3>
+                    <p class="text-gray-500">Vale de $150 MXN</p>
+                </div>
+                <button onclick="canjear('Vale de despensa',150)" class="bg-cyan-500 text-white px-5 py-3 rounded-xl">Canjear</button>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 flex justify-between items-center card-shadow">
+                <div>
+                    <h3 class="font-bold text-xl">Internet</h3>
+                    <p class="text-gray-500">Descuento de $120 MXN</p>
+                </div>
+                <button onclick="canjear('Pago de internet',120)" class="bg-cyan-500 text-white px-5 py-3 rounded-xl">Pagar</button>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section id="ayuda" class="screen p-5 pb-36">
+
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">
+            Ayuda y Funcionamiento
+        </h2>
+
+        <p class="text-gray-500 mb-8">
+            Explicación del sistema EcoCanje y del bote inteligente.
+        </p>
+
+        <div class="space-y-5">
+
+            <div class="bg-white rounded-3xl p-5 card-shadow">
+                <h3 class="font-bold text-xl mb-3">¿Qué es EcoCanje?</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    EcoCanje es una plataforma que recompensa a los usuarios por reciclar. El usuario deposita residuos en un bote inteligente y la app recibe la información para sumar saldo, puntos verdes y registrar la trazabilidad.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 card-shadow">
+                <h3 class="font-bold text-xl mb-3">¿Cómo responde el bote inteligente?</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    El bote puede simular la detección del material, el peso aproximado, el nivel de llenado y la recompensa. Después manda esos datos a la app, donde se actualiza el saldo ecológico del usuario.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 card-shadow">
+                <h3 class="font-bold text-xl mb-3">Uso de códigos de barras</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Los códigos de barras permiten identificar productos de forma única y rápida, facilitando la automatización en la gestión de inventarios y procesos de venta. Al escanearlos, se obtiene información clave como el identificador único del producto GTIN, el
+                    fabricante, el país de origen, el tipo de artículo, el lote y, en algunos casos, la fecha de caducidad.
+                </p>
+
+                <p class="text-gray-600 leading-relaxed mt-4">
+                    En EcoCanje, esta información ayuda a reconocer qué producto se está reciclando, validar el tipo de envase, registrar su origen y asignar una recompensa justa.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 card-shadow">
+                <h3 class="font-bold text-xl mb-3">¿Para qué sirve el mapa?</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    El mapa permite buscar ubicaciones reales, como Interlomas, Magdalena de Huixquilucan o cualquier dirección. También puede mostrar la ubicación actual del usuario para ayudarlo a encontrar centros EcoCanje cercanos.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 card-shadow">
+                <h3 class="font-bold text-xl mb-3">Beneficios del sistema</h3>
+                <ul class="list-disc pl-5 text-gray-600 space-y-2">
+                    <li>Reduce residuos mal separados.</li>
+                    <li>Premia a los usuarios por reciclar.</li>
+                    <li>Registra trazabilidad de materiales.</li>
+                    <li>Apoya pagos de servicios como CFE, agua o despensa.</li>
+                    <li>Conecta ciudadanos, empresas y centros de reciclaje.</li>
+                </ul>
+            </div>
+
+        </div>
+
+    </section>
+
+    <nav class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 bottom-nav z-50">
+
+        <div class="grid grid-cols-5 py-3">
+
+            <button onclick="cambiarPantalla('inicio', this)" class="nav-btn flex flex-col items-center active-nav">
+            <div class="w-16 h-16 rounded-full active-bg flex items-center justify-center mb-1">
+                <i data-lucide="wallet-cards" class="w-7 h-7"></i>
+            </div>
+            <span class="text-sm">Inicio</span>
+        </button>
+
+            <button onclick="cambiarPantalla('centros', this)" class="nav-btn flex flex-col items-center text-gray-500">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center mb-1">
+                <i data-lucide="map-pinned" class="w-7 h-7"></i>
+            </div>
+            <span class="text-sm">Centros</span>
+        </button>
+
+            <button onclick="cambiarPantalla('demanda', this)" class="nav-btn flex flex-col items-center text-gray-500">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center mb-1">
+                <i data-lucide="bar-chart-3" class="w-7 h-7"></i>
+            </div>
+            <span class="text-sm">Demanda</span>
+        </button>
+
+            <button onclick="cambiarPantalla('cupones', this)" class="nav-btn flex flex-col items-center text-gray-500">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center mb-1">
+                <i data-lucide="ticket-percent" class="w-7 h-7"></i>
+            </div>
+            <span class="text-sm">Cupones</span>
+        </button>
+
+            <button onclick="cambiarPantalla('ayuda', this)" class="nav-btn flex flex-col items-center text-gray-500">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center mb-1">
+                <i data-lucide="help-circle" class="w-7 h-7"></i>
+            </div>
+            <span class="text-sm">Ayuda</span>
+        </button>
+
+        </div>
+
+    </nav>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const abono = params.get("abono");
+        const materialQR = params.get("material");
+
+        saldo = Number(localStorage.getItem("saldoEcoCanje")) || saldo;
+
+        if (abono) {
+            saldo += Number(abono);
+            localStorage.setItem("saldoEcoCanje", saldo);
+
+            document.getElementById("respuestaBote").innerHTML = `
+        ♻️ <b>Abono recibido por QR</b><br><br>
+        Material: ${materialQR}<br>
+        Recompensa: +$${Number(abono).toFixed(2)} MXN<br><br>
+        Tu monedero digital fue actualizado.
+    `;
+        }
+    </script>
+
+    <script>
+        lucide.createIcons();
+
+        new QRCode(document.getElementById("qrcode"), {
+            text: "EcoCanje-Usuario-102938",
+            width: 220,
+            height: 220
+        });
+
+        let saldo = 0;
+        let puntos = 0;
+        let llenado = 0;
+        let movimientos = [];
+
+        let map;
+        let markerUsuario;
+        let markerBusqueda;
+        let geocoder;
+
+        const recompensas = {
+            PET1: {
+                nombre: "PET 1",
+                dinero: 0.02,
+                puntos: 5,
+                llenado: 2,
+                peso: "20 g",
+                demanda: "Media",
+                mensaje: "Botella PET 1 detectada. Material aceptado por el bote."
+            },
+            PET2: {
+                nombre: "PET 2",
+                dinero: 0.04,
+                puntos: 8,
+                llenado: 3,
+                peso: "35 g",
+                demanda: "Alta",
+                mensaje: "Envase PET 2 detectado. Tiene mayor valor por reciclaje."
+            },
+            PET4: {
+                nombre: "PET 4",
+                dinero: 0.01,
+                puntos: 3,
+                llenado: 1,
+                peso: "10 g",
+                demanda: "Baja",
+                mensaje: "Bolsa reciclable detectada. Material registrado correctamente."
+            },
+            ALUMINIO: {
+                nombre: "Aluminio",
+                dinero: 1.50,
+                puntos: 20,
+                llenado: 5,
+                peso: "15 g",
+                demanda: "Muy alta",
+                mensaje: "Lata de aluminio detectada. Alta demanda industrial."
+            }
+        };
+
+        const centros = [{
+            nombre: "Centro Eco PET Norte",
+            lat: 19.4839,
+            lng: -99.1332,
+            info: "Centro especializado en PET 1, PET 2 y aluminio."
+        }, {
+            nombre: "Estación Circular Sur",
+            lat: 19.3552,
+            lng: -99.1536,
+            info: "Centro inteligente para PET 4, aluminio y separación urbana."
+        }];
+
+        function actualizarUI() {
+            document.getElementById("saldo").innerText = "$" + saldo.toFixed(2);
+            document.getElementById("puntos").innerText = puntos + " puntos verdes";
+            document.getElementById("llenadoTexto").innerText = llenado + "%";
+            document.getElementById("llenadoBarra").style.width = llenado + "%";
+        }
+
+        function recibirInformacionDelBote(tipo) {
+            const material = recompensas[tipo];
+
+            saldo += material.dinero;
+            puntos += material.puntos;
+            llenado += material.llenado;
+
+            if (llenado > 100) {
+                llenado = 100;
+            }
+
+            movimientos.push(
+                material.nombre + " | +$" + material.dinero.toFixed(2) + " MXN | +" + material.puntos + " puntos"
+            );
+
+            document.getElementById("respuestaBote").innerHTML = `
+        ♻️ <b>${material.nombre} detectado</b><br><br>
+        ${material.mensaje}<br><br>
+
+        <b>Información recibida del bote:</b><br>
+        Material: ${material.nombre}<br>
+        Peso aproximado: ${material.peso}<br>
+        Demanda actual: ${material.demanda}<br>
+        Usuario: EcoCanje-Usuario-102938<br><br>
+
+        <b>Recompensa enviada:</b><br>
+        +$${material.dinero.toFixed(2)} MXN<br>
+        +${material.puntos} puntos verdes<br><br>
+
+        Llenado actual del bote: ${llenado}%
+    `;
+
+
+            /* =========================================================
+               CONEXIÓN CON PYTHON / ARDUINO / BOTE INTELIGENTE
+               Python debe publicar datos en: /ultimo_reciclaje
+               Este bloque NO cambia la estructura visual de la página.
+               ========================================================= */
+
+            let ultimoCodigoWeb = "";
+
+            async function revisarDatosDelBote() {
+                try {
+                    const respuesta = await fetch("/ultimo_reciclaje");
+                    const data = await respuesta.json();
+
+                    if (data.codigo && data.codigo !== ultimoCodigoWeb) {
+                        ultimoCodigoWeb = data.codigo;
+
+                        saldo += Number(data.recompensa);
+                        puntos += 10;
+                        llenado += 3;
+
+                        if (llenado > 100) {
+                            llenado = 100;
+                        }
+
+                        movimientos.push(
+                            data.material +
+                            " | +$" +
+                            Number(data.recompensa).toFixed(2) +
+                            " MXN"
+                        );
+
+                        document.getElementById("respuestaBote").innerHTML = `
+                ♻️ <b>Dato recibido desde el bote inteligente</b><br><br>
+
+                <b>Producto:</b> ${data.producto}<br>
+                <b>Material:</b> ${data.material}<br>
+                <b>Código:</b> ${data.codigo}<br>
+                <b>Tipo:</b> ${data.tipo}<br><br>
+
+                <b>Recompensa abonada:</b><br>
+                +$${Number(data.recompensa).toFixed(2)} MXN<br><br>
+
+                El sistema detectó correctamente el residuo y actualizó el monedero digital.
+            `;
+
+                        actualizarUI();
+                    }
+
+                } catch (error) {
+                    console.log("Esperando datos del bote...");
+                }
+            }
+
+            setInterval(revisarDatosDelBote, 1000);
+
+
+            actualizarUI();
+        }
+
+        function depositarPET1() {
+            recibirInformacionDelBote("PET1");
+        }
+
+        function depositarPET2() {
+            recibirInformacionDelBote("PET2");
+        }
+
+        function depositarPET4() {
+            recibirInformacionDelBote("PET4");
+        }
+
+        function depositarAluminio() {
+            recibirInformacionDelBote("ALUMINIO");
+        }
+
+        function mostrarMovimientos() {
+            if (movimientos.length === 0) {
+                alert("Todavía no hay movimientos.");
+                return;
+            }
+
+            alert("Últimos movimientos:\n\n" + movimientos.join("\n"));
+        }
+
+        function canjear(producto, costo) {
+            if (saldo >= costo) {
+                saldo -= costo;
+                movimientos.push("Canje: " + producto + " | -$" + costo + " MXN");
+
+                /* =========================================================
+                   CONEXIÓN CON PYTHON / ARDUINO / BOTE INTELIGENTE
+                   Python debe publicar datos en: /ultimo_reciclaje
+                   Este bloque NO cambia la estructura visual de la página.
+                   ========================================================= */
+
+                let ultimoCodigoWeb = "";
+
+                async function revisarDatosDelBote() {
+                    try {
+                        const respuesta = await fetch("/ultimo_reciclaje");
+                        const data = await respuesta.json();
+
+                        if (data.codigo && data.codigo !== ultimoCodigoWeb) {
+                            ultimoCodigoWeb = data.codigo;
+
+                            saldo += Number(data.recompensa);
+                            puntos += 10;
+                            llenado += 3;
+
+                            if (llenado > 100) {
+                                llenado = 100;
+                            }
+
+                            movimientos.push(
+                                data.material +
+                                " | +$" +
+                                Number(data.recompensa).toFixed(2) +
+                                " MXN"
+                            );
+
+                            document.getElementById("respuestaBote").innerHTML = `
+                ♻️ <b>Dato recibido desde el bote inteligente</b><br><br>
+
+                <b>Producto:</b> ${data.producto}<br>
+                <b>Material:</b> ${data.material}<br>
+                <b>Código:</b> ${data.codigo}<br>
+                <b>Tipo:</b> ${data.tipo}<br><br>
+
+                <b>Recompensa abonada:</b><br>
+                +$${Number(data.recompensa).toFixed(2)} MXN<br><br>
+
+                El sistema detectó correctamente el residuo y actualizó el monedero digital.
+            `;
+
+                            actualizarUI();
+                        }
+
+                    } catch (error) {
+                        console.log("Esperando datos del bote...");
+                    }
+                }
+
+                setInterval(revisarDatosDelBote, 1000);
+
+
+                actualizarUI();
+                alert("Canje exitoso: " + producto);
+            } else {
+                alert("Saldo insuficiente. Necesitas $" + costo + " MXN.");
+            }
+        }
+
+        function cambiarPantalla(id, boton) {
+            document.querySelectorAll(".screen").forEach(screen => {
+                screen.classList.remove("active");
+            });
+
+            document.getElementById(id).classList.add("active");
+
+            document.querySelectorAll(".nav-btn").forEach(btn => {
+                btn.classList.remove("active-nav");
+
+                const circulo = btn.querySelector("div");
+                if (circulo) {
+                    circulo.classList.remove("active-bg");
+                }
+            });
+
+            boton.classList.add("active-nav");
+
+            const activeCircle = boton.querySelector("div");
+            if (activeCircle) {
+                activeCircle.classList.add("active-bg");
+            }
+
+            if (id === "centros" && map) {
+                setTimeout(() => {
+                    google.maps.event.trigger(map, "resize");
+                    mostrarTodos();
+                }, 300);
+            }
+        }
+
+        function abrirPerfil() {
+            document.getElementById("perfilModal").classList.remove("hidden");
+        }
+
+        function cerrarPerfil() {
+            document.getElementById("perfilModal").classList.add("hidden");
+        }
+
+        function guardarPerfil() {
+            alert("Cambios guardados correctamente.");
+            cerrarPerfil();
+        }
+
+        function initMap() {
+            const cdmx = {
+                lat: 19.4326,
+                lng: -99.1332
+            };
+
+            geocoder = new google.maps.Geocoder();
+
+            map = new google.maps.Map(
+                document.getElementById("map"), {
+                    zoom: 11,
+                    center: cdmx,
+                    mapTypeControl: true,
+                    streetViewControl: true,
+                    fullscreenControl: true
+                }
+            );
+
+            centros.forEach(centro => {
+                const marker = new google.maps.Marker({
+                    position: {
+                        lat: centro.lat,
+                        lng: centro.lng
+                    },
+                    map: map,
+                    title: centro.nombre,
+                    animation: google.maps.Animation.DROP,
+                    icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                });
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `
+                <div style="padding:10px">
+                    <h2 style="font-size:18px;font-weight:bold">
+                        ${centro.nombre}
+                    </h2>
+                    <p style="margin-top:8px">
+                        ${centro.info}
+                    </p>
+                </div>
+            `
+                });
+
+                marker.addListener("click", () => {
+                    infoWindow.open({
+                        anchor: marker,
+                        map
+                    });
+
+                    document.getElementById("estadoSistema").innerHTML = `
+                ♻️ Centro seleccionado:<br><br>
+                <b>${centro.nombre}</b><br>
+                ${centro.info}
+            `;
+                });
+            });
+        }
+
+        function centrarMapa(lat, lng, nombre) {
+            map.setCenter({
+                lat,
+                lng
+            });
+            map.setZoom(16);
+
+            document.getElementById("estadoSistema").innerHTML = `
+        📍 Navegando hacia:<br><br>
+        <b>${nombre}</b><br><br>
+        El mapa se centró automáticamente en este centro ecológico.
+    `;
+        }
+
+        function mostrarTodos() {
+            if (!map) {
+                return;
+            }
+
+            map.setCenter({
+                lat: 19.4326,
+                lng: -99.1332
+            });
+
+            map.setZoom(11);
+
+            document.getElementById("estadoSistema").innerHTML = `
+        🌎 Mostrando todos los centros EcoCanje disponibles.
+    `;
+        }
+
+        function miUbicacion() {
+            if (navigator.geolocation) {
+                document.getElementById("estadoSistema").innerHTML =
+                    "📡 Obteniendo ubicación GPS del usuario...";
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+
+                        if (markerUsuario) {
+                            markerUsuario.setMap(null);
+                        }
+
+                        markerUsuario = new google.maps.Marker({
+                            position: pos,
+                            map: map,
+                            title: "Tu ubicación",
+                            animation: google.maps.Animation.BOUNCE,
+                            icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                        });
+
+                        map.setCenter(pos);
+                        map.setZoom(15);
+
+                        document.getElementById("estadoSistema").innerHTML = `
+                    📍 Ubicación obtenida correctamente.<br><br>
+                    <b>Latitud:</b> ${pos.lat.toFixed(5)}<br>
+                    <b>Longitud:</b> ${pos.lng.toFixed(5)}<br><br>
+                    Ahora puedes buscar centros EcoCanje cercanos.
+                `;
+                    },
+                    () => {
+                        document.getElementById("estadoSistema").innerHTML = `
+                    ❌ No se pudo obtener tu ubicación. Revisa los permisos del navegador.
+                `;
+                    }
+                );
+            } else {
+                alert("Tu navegador no soporta geolocalización.");
+            }
+        }
+
+        function buscarLugarReal() {
+            const direccion = document.getElementById("buscadorLugar").value;
+
+            if (direccion.trim() === "") {
+                document.getElementById("estadoSistema").innerHTML =
+                    "⚠️ Escribe una ubicación para buscar.";
+                return;
+            }
+
+            geocoder.geocode({
+                    address: direccion
+                },
+                function(results, status) {
+                    if (status === "OK") {
+                        const ubicacion = results[0].geometry.location;
+
+                        map.setCenter(ubicacion);
+                        map.setZoom(15);
+
+                        if (markerBusqueda) {
+                            markerBusqueda.setMap(null);
+                        }
+
+                        markerBusqueda = new google.maps.Marker({
+                            map: map,
+                            position: ubicacion,
+                            animation: google.maps.Animation.DROP,
+                            icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                        });
+
+                        document.getElementById("estadoSistema").innerHTML = `
+                    🔎 Ubicación encontrada:<br><br>
+                    <b>${results[0].formatted_address}</b><br><br>
+                    El sistema puede usar esta ubicación para buscar botes cercanos,
+                    calcular rutas y mostrar zonas de reciclaje disponibles.
+                `;
+                    } else {
+                        document.getElementById("estadoSistema").innerHTML = `
+                    ❌ No se encontró la ubicación. Intenta escribir una dirección más específica.
+                `;
+                    }
+                }
+            );
+        }
+
+
+        /* =========================================================
+           CONEXIÓN CON PYTHON / ARDUINO / BOTE INTELIGENTE
+           Python debe publicar datos en: /ultimo_reciclaje
+           Este bloque NO cambia la estructura visual de la página.
+           ========================================================= */
+
+        let ultimoCodigoWeb = "";
+
+        async function revisarDatosDelBote() {
+            try {
+                const respuesta = await fetch("/ultimo_reciclaje");
+                const data = await respuesta.json();
+
+                if (data.codigo && data.codigo !== ultimoCodigoWeb) {
+                    ultimoCodigoWeb = data.codigo;
+
+                    saldo += Number(data.recompensa);
+                    puntos += 10;
+                    llenado += 3;
+
+                    if (llenado > 100) {
+                        llenado = 100;
+                    }
+
+                    movimientos.push(
+                        data.material +
+                        " | +$" +
+                        Number(data.recompensa).toFixed(2) +
+                        " MXN"
+                    );
+
+                    document.getElementById("respuestaBote").innerHTML = `
+                ♻️ <b>Dato recibido desde el bote inteligente</b><br><br>
+
+                <b>Producto:</b> ${data.producto}<br>
+                <b>Material:</b> ${data.material}<br>
+                <b>Código:</b> ${data.codigo}<br>
+                <b>Tipo:</b> ${data.tipo}<br><br>
+
+                <b>Recompensa abonada:</b><br>
+                +$${Number(data.recompensa).toFixed(2)} MXN<br><br>
+
+                El sistema detectó correctamente el residuo y actualizó el monedero digital.
+            `;
+
+                    actualizarUI();
+                }
+
+            } catch (error) {
+                console.log("Esperando datos del bote...");
+            }
+        }
+
+        setInterval(revisarDatosDelBote, 1000);
+
+
+        actualizarUI();
+    </script>
+
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA73Zc2DNFH8140ASc-6th6NO3xThcstrc&callback=initMap">
+    </script>
+
+</body>
+
+</html>
