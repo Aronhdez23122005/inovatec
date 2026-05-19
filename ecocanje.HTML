@@ -179,7 +179,7 @@
             <div id="qrcode" class="bg-white p-5 rounded-2xl"></div>
 
             <p class="text-gray-500 text-center mt-5">
-                Escanea el QR para registrar reciclaje.
+                Muestra el codigo a la camara para tu reconpensa.
             </p>
 
             <button onclick="mostrarMovimientos()" class="mt-5 bg-cyan-500 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-cyan-600 transition">
@@ -856,64 +856,129 @@ alert("Canje exitoso: " + producto);
 
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA73Zc2DNFH8140ASc-6th6NO3xThcstrc&callback=initMap">
     </script>
-<script>
-window.addEventListener("load", function(){
 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_PROYECTO.firebaseapp.com",
+    databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com",
+    projectId: "TU_PROYECTO",
+    storageBucket: "TU_PROYECTO.appspot.com",
+    messagingSenderId: "TU_SENDER_ID",
+    appId: "TU_APP_ID"
+};
+
+/* ============================
+   INICIAR FIREBASE
+============================ */
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const usuarioID = "EcoCanje-Usuario-102938";
+const usuarioRef = ref(db, "usuarios/" + usuarioID);
+
+/* ============================
+   LEER DATOS EN TIEMPO REAL
+============================ */
+
+onValue(usuarioRef, (snapshot) => {
+    const data = snapshot.val();
+
+    if(data){
+        saldo = Number(data.saldo) || 0;
+        puntos = Number(data.puntos) || 0;
+        llenado = Number(data.llenado) || 0;
+
+        document.getElementById("saldo").innerText = "$" + saldo.toFixed(2);
+        document.getElementById("puntos").innerText = puntos + " puntos verdes";
+        document.getElementById("llenadoTexto").innerText = llenado + "%";
+        document.getElementById("llenadoBarra").style.width = llenado + "%";
+
+        if(data.ultimoMensaje){
+            document.getElementById("respuestaBote").innerHTML = data.ultimoMensaje;
+        }
+    }
+});
+
+/* ============================
+   ABONAR DESDE QR
+============================ */
+
+async function revisarAbonoQR(){
     const params = new URLSearchParams(window.location.search);
 
     const abono = params.get("abono");
     const material = params.get("material") || "Reciclaje";
     const producto = params.get("producto") || "Producto reciclado";
-    const usuario = params.get("usuario") || "EcoCanje";
-    const token = params.get("token") || Date.now();
+    const usuario = params.get("usuario") || usuarioID;
+    const token = params.get("token");
 
     if(!abono){
         return;
     }
 
-    const tokenGuardado = localStorage.getItem("ultimoTokenEcoCanje");
+    if(!token){
+        alert("QR inválido: falta token.");
+        return;
+    }
 
-    if(tokenGuardado === token){
+    const tokenRef = ref(db, "tokensUsados/" + token);
+    const tokenSnap = await get(tokenRef);
+
+    if(tokenSnap.exists()){
         alert("Este QR ya fue usado.");
         return;
     }
 
-    let saldoActual = Number(localStorage.getItem("saldoEcoCanje")) || 0;
-    let puntosActuales = Number(localStorage.getItem("puntosEcoCanje")) || 0;
-    let llenadoActual = Number(localStorage.getItem("llenadoEcoCanje")) || 0;
+    const usuarioSnap = await get(usuarioRef);
+    const data = usuarioSnap.val() || {};
 
-    saldoActual += Number(abono);
-    puntosActuales += 10;
-    llenadoActual += 3;
+    const saldoActual = Number(data.saldo) || 0;
+    const puntosActuales = Number(data.puntos) || 0;
+    const llenadoActual = Number(data.llenado) || 0;
 
-    if(llenadoActual > 100){
-        llenadoActual = 100;
-    }
+    const nuevoSaldo = saldoActual + Number(abono);
+    const nuevosPuntos = puntosActuales + 10;
+    const nuevoLlenado = Math.min(llenadoActual + 3, 100);
 
-    localStorage.setItem("saldoEcoCanje", saldoActual);
-    localStorage.setItem("puntosEcoCanje", puntosActuales);
-    localStorage.setItem("llenadoEcoCanje", llenadoActual);
-    localStorage.setItem("ultimoTokenEcoCanje", token);
-
-    document.getElementById("saldo").innerText = "$" + saldoActual.toFixed(2);
-    document.getElementById("puntos").innerText = puntosActuales + " puntos verdes";
-    document.getElementById("llenadoTexto").innerText = llenadoActual + "%";
-    document.getElementById("llenadoBarra").style.width = llenadoActual + "%";
-
-    document.getElementById("respuestaBote").innerHTML = `
-        <b>Abono recibido correctamente</b><br><br>
+    const mensaje = `
+        ✅ <b>Abono recibido correctamente</b><br><br>
         <b>Producto:</b> ${producto}<br>
         <b>Material:</b> ${material}<br>
         <b>Usuario:</b> ${usuario}<br><br>
         <b>Recompensa abonada:</b><br>
-        +$${Number(abono).toFixed(2)} MXN
+        +$${Number(abono).toFixed(2)} MXN<br><br>
+        Tu monedero digital fue actualizado en todos tus dispositivos.
     `;
+
+    await update(usuarioRef, {
+        saldo: nuevoSaldo,
+        puntos: nuevosPuntos,
+        llenado: nuevoLlenado,
+        ultimoProducto: producto,
+        ultimoMaterial: material,
+        ultimoAbono: Number(abono),
+        ultimoMensaje: mensaje
+    });
+
+    await update(tokenRef, {
+        usado: true,
+        fecha: new Date().toISOString(),
+        producto: producto,
+        material: material,
+        abono: Number(abono)
+    });
 
     alert("Abono realizado: $" + Number(abono).toFixed(2));
 
     window.history.replaceState({}, document.title, window.location.pathname);
+}
 
-});
+revisarAbonoQR();
 </script>
 </body>
 
