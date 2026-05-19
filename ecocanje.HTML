@@ -179,7 +179,7 @@
             <div id="qrcode" class="bg-white p-5 rounded-2xl"></div>
 
             <p class="text-gray-500 text-center mt-5">
-                Escanea el QR para registrar reciclaje.
+                Muestra el codigo a la camara para tu reconpensa.
             </p>
 
             <button onclick="mostrarMovimientos()" class="mt-5 bg-cyan-500 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-cyan-600 transition">
@@ -851,12 +851,72 @@ alert("Canje exitoso: " + producto);
                 }
             );
         }
+
+        function revisarAbonoQR() {
+            const params = new URLSearchParams(window.location.search);
+
+            const abono = params.get("abono");
+            const material = params.get("material") || "Reciclaje";
+            const producto = params.get("producto") || "Producto reciclado";
+            const usuario = params.get("usuario") || "EcoCanje-Usuario-102938";
+            const token = params.get("token") || "";
+
+            if (!abono) {
+                return;
+            }
+
+            const ultimoToken = localStorage.getItem("ultimoTokenEcoCanje");
+
+            if (token && token === ultimoToken) {
+                document.getElementById("respuestaBote").innerHTML = `
+                    ⚠️ <b>Este QR ya fue usado</b><br><br>
+                    Genera otro QR con un token diferente.
+                `;
+                return;
+            }
+
+            saldo = Number(localStorage.getItem("saldoEcoCanje")) || 0;
+            puntos = Number(localStorage.getItem("puntosEcoCanje")) || 0;
+            llenado = Number(localStorage.getItem("llenadoEcoCanje")) || 0;
+
+            saldo += Number(abono);
+            puntos += 10;
+            llenado += 3;
+
+            if (llenado > 100) {
+                llenado = 100;
+            }
+
+            if (token) {
+                localStorage.setItem("ultimoTokenEcoCanje", token);
+            }
+
+            movimientos.push(
+                material + " | +$" + Number(abono).toFixed(2) + " MXN por QR"
+            );
+
+            document.getElementById("respuestaBote").innerHTML = `
+                ✅ <b>Abono recibido correctamente</b><br><br>
+                <b>Producto:</b> ${producto}<br>
+                <b>Material:</b> ${material}<br>
+                <b>Usuario:</b> ${usuario}<br><br>
+                <b>Recompensa abonada:</b><br>
+                +$${Number(abono).toFixed(2)} MXN<br><br>
+                Tu monedero digital fue actualizado.
+            `;
+
             actualizarUI();
+
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+
+            actualizarUI();
+            revisarAbonoQR();
 </script>
 
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA73Zc2DNFH8140ASc-6th6NO3xThcstrc&callback=initMap">
     </script>
-
 </body>
 
 </html>
