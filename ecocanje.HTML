@@ -851,135 +851,72 @@ alert("Canje exitoso: " + producto);
                 }
             );
         }
+
+        function revisarAbonoQR() {
+            const params = new URLSearchParams(window.location.search);
+
+            const abono = params.get("abono");
+            const material = params.get("material") || "Reciclaje";
+            const producto = params.get("producto") || "Producto reciclado";
+            const usuario = params.get("usuario") || "EcoCanje-Usuario-102938";
+            const token = params.get("token") || "";
+
+            if (!abono) {
+                return;
+            }
+
+            const ultimoToken = localStorage.getItem("ultimoTokenEcoCanje");
+
+            if (token && token === ultimoToken) {
+                document.getElementById("respuestaBote").innerHTML = `
+                    ⚠️ <b>Este QR ya fue usado</b><br><br>
+                    Genera otro QR con un token diferente.
+                `;
+                return;
+            }
+
+            saldo = Number(localStorage.getItem("saldoEcoCanje")) || 0;
+            puntos = Number(localStorage.getItem("puntosEcoCanje")) || 0;
+            llenado = Number(localStorage.getItem("llenadoEcoCanje")) || 0;
+
+            saldo += Number(abono);
+            puntos += 10;
+            llenado += 3;
+
+            if (llenado > 100) {
+                llenado = 100;
+            }
+
+            if (token) {
+                localStorage.setItem("ultimoTokenEcoCanje", token);
+            }
+
+            movimientos.push(
+                material + " | +$" + Number(abono).toFixed(2) + " MXN por QR"
+            );
+
+            document.getElementById("respuestaBote").innerHTML = `
+                ✅ <b>Abono recibido correctamente</b><br><br>
+                <b>Producto:</b> ${producto}<br>
+                <b>Material:</b> ${material}<br>
+                <b>Usuario:</b> ${usuario}<br><br>
+                <b>Recompensa abonada:</b><br>
+                +$${Number(abono).toFixed(2)} MXN<br><br>
+                Tu monedero digital fue actualizado.
+            `;
+
             actualizarUI();
+
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+
+            actualizarUI();
+            revisarAbonoQR();
 </script>
 
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA73Zc2DNFH8140ASc-6th6NO3xThcstrc&callback=initMap">
     </script>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "TU_PROYECTO.firebaseapp.com",
-    databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com",
-    projectId: "TU_PROYECTO",
-    storageBucket: "TU_PROYECTO.appspot.com",
-    messagingSenderId: "TU_SENDER_ID",
-    appId: "TU_APP_ID"
-};
-
-/* ============================
-   INICIAR FIREBASE
-============================ */
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const usuarioID = "EcoCanje-Usuario-102938";
-const usuarioRef = ref(db, "usuarios/" + usuarioID);
-
-/* ============================
-   LEER DATOS EN TIEMPO REAL
-============================ */
-
-onValue(usuarioRef, (snapshot) => {
-    const data = snapshot.val();
-
-    if(data){
-        saldo = Number(data.saldo) || 0;
-        puntos = Number(data.puntos) || 0;
-        llenado = Number(data.llenado) || 0;
-
-        document.getElementById("saldo").innerText = "$" + saldo.toFixed(2);
-        document.getElementById("puntos").innerText = puntos + " puntos verdes";
-        document.getElementById("llenadoTexto").innerText = llenado + "%";
-        document.getElementById("llenadoBarra").style.width = llenado + "%";
-
-        if(data.ultimoMensaje){
-            document.getElementById("respuestaBote").innerHTML = data.ultimoMensaje;
-        }
-    }
-});
-
-/* ============================
-   ABONAR DESDE QR
-============================ */
-
-async function revisarAbonoQR(){
-    const params = new URLSearchParams(window.location.search);
-
-    const abono = params.get("abono");
-    const material = params.get("material") || "Reciclaje";
-    const producto = params.get("producto") || "Producto reciclado";
-    const usuario = params.get("usuario") || usuarioID;
-    const token = params.get("token");
-
-    if(!abono){
-        return;
-    }
-
-    if(!token){
-        alert("QR inválido: falta token.");
-        return;
-    }
-
-    const tokenRef = ref(db, "tokensUsados/" + token);
-    const tokenSnap = await get(tokenRef);
-
-    if(tokenSnap.exists()){
-        alert("Este QR ya fue usado.");
-        return;
-    }
-
-    const usuarioSnap = await get(usuarioRef);
-    const data = usuarioSnap.val() || {};
-
-    const saldoActual = Number(data.saldo) || 0;
-    const puntosActuales = Number(data.puntos) || 0;
-    const llenadoActual = Number(data.llenado) || 0;
-
-    const nuevoSaldo = saldoActual + Number(abono);
-    const nuevosPuntos = puntosActuales + 10;
-    const nuevoLlenado = Math.min(llenadoActual + 3, 100);
-
-    const mensaje = `
-        ✅ <b>Abono recibido correctamente</b><br><br>
-        <b>Producto:</b> ${producto}<br>
-        <b>Material:</b> ${material}<br>
-        <b>Usuario:</b> ${usuario}<br><br>
-        <b>Recompensa abonada:</b><br>
-        +$${Number(abono).toFixed(2)} MXN<br><br>
-        Tu monedero digital fue actualizado en todos tus dispositivos.
-    `;
-
-    await update(usuarioRef, {
-        saldo: nuevoSaldo,
-        puntos: nuevosPuntos,
-        llenado: nuevoLlenado,
-        ultimoProducto: producto,
-        ultimoMaterial: material,
-        ultimoAbono: Number(abono),
-        ultimoMensaje: mensaje
-    });
-
-    await update(tokenRef, {
-        usado: true,
-        fecha: new Date().toISOString(),
-        producto: producto,
-        material: material,
-        abono: Number(abono)
-    });
-
-    alert("Abono realizado: $" + Number(abono).toFixed(2));
-
-    window.history.replaceState({}, document.title, window.location.pathname);
-}
-
-revisarAbonoQR();
-</script>
 </body>
 
 </html>
