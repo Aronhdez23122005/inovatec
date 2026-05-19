@@ -127,7 +127,7 @@
 
     <section id="inicio" class="screen active p-5 pb-36">
 
-        <div class="bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 rounded-[35px] p-6 text-white card-shadow relative overflow-hidden">
+        <div class="bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 rounded-[35px] p-5 text-white card-shadow relative overflow-hidden scale-90 origin-top">
 
             <div class="absolute top-[-30px] right-[-20px] opacity-10">
                 <i data-lucide="credit-card" class="w-56 h-56"></i>
@@ -617,8 +617,17 @@
             if (saldo >= costo) {
                 saldo -= costo;
                 movimientos.push("Canje: " + producto + " | -$" + costo + " MXN");
-            actualizarUI();
-alert("Canje exitoso: " + producto);
+                actualizarUI();
+
+                // Guardar el gasto en Firebase para que no se reinicie al recargar
+                update(ref(db, "usuarios/" + usuarioID), {
+                    saldo: saldo,
+                    puntos: puntos,
+                    llenado: llenado,
+                    ultimoMensaje: "Canje realizado: " + producto + "<br>Saldo restante: $" + saldo.toFixed(2)
+                });
+
+                alert("Canje exitoso: " + producto);
             } else {
                 alert("Saldo insuficiente. Necesitas $" + costo + " MXN.");
             }
@@ -850,7 +859,7 @@ alert("Canje exitoso: " + producto);
 </script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "TU_API_KEY",
